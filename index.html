@@ -62,5 +62,64 @@
   <div class="site-link-container">
     <a class="site-link" href="https://instagram.com/ig_madhuuuuu" target="_blank" rel="noopener">Follow on Instagram</a>
   </div>
+
+  <title>Falling Flowers Animation</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #f0f8ff;
+      height: 100vh;
+    }
+    .flower {
+      position: absolute;
+      font-size: 2em;
+      pointer-events: none;
+      user-select: none;
+      will-change: transform, opacity;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    const flowerEmojis = ["🌸", "🌺", "🌼", "💮", "🌷", "🌻"];
+    function randomBetween(min, max) {
+      return min + Math.random() * (max - min);
+    }
+    function createFlower() {
+      const flower = document.createElement('div');
+      flower.className = 'flower';
+      flower.textContent = flowerEmojis[Math.floor(Math.random() * flowerEmojis.length)];
+      flower.style.left = randomBetween(0, window.innerWidth - 40) + "px";
+      flower.style.top = "-40px";
+      flower.style.fontSize = randomBetween(1.5, 2.5) + "em";
+      flower.style.opacity = randomBetween(0.7, 1);
+      document.body.appendChild(flower);
+
+      // Animate falling
+      const fallDuration = randomBetween(3, 6); // seconds
+      const horizontalDrift = randomBetween(-60, 60);
+
+      flower.animate([
+        { transform: `translateY(0px)`, opacity: 1 },
+        { transform: `translate(${horizontalDrift}px, ${window.innerHeight + 60}px)`, opacity: 0.2 }
+      ], {
+        duration: fallDuration * 1000,
+        easing: "linear"
+      });
+
+      setTimeout(() => {
+        flower.style.transform = `translate(${horizontalDrift}px, ${window.innerHeight + 60}px)`;
+        flower.style.opacity = 0;
+        setTimeout(() => flower.remove(), 700);
+      }, fallDuration * 1000);
+    }
+
+    // Drop flowers continuously
+    setInterval(createFlower, 350);
+  </script>
+</body>
+</html>
 </body>
 </html>
