@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Gallery</title>
+  <style>
+    body {
+      background: #222;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+    }
+    .gallery-container {
+      position: relative;
+      width: 600px;
+      height: 400px;
+      margin: 40px auto;
+      overflow: hidden;
+      border-radius: 10px;
+      box-shadow: 0 6px 32px rgba(0,0,0,0.4);
+      background: #111;
+      transition: width 0.2s, height 0.2s;
+    }
+    .gallery-slide {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      left: 0;
+      top: 0;
+      transition: opacity 1s ease, transform 1s ease;
+      transform: translateX(40px);
+      z-index: 0;
+    }
+    .gallery-slide.active {
+      opacity: 1;
+      transform: translateX(0);
+      z-index: 1;
+    }
+    .gallery-controls {
+      position: absolute;
+      width: 100%;
+      bottom: 15px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+    }
+    .gallery-btn {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: #fff;
+      font-size: 24px;
+      cursor: pointer;
+      margin: 0 12px;
+      padding: 8px 14px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+    .gallery-btn:hover {
+      background: rgba(255,255,255,0.4);
+    }
+    .gallery-dots {
+      margin-left: 18px;
+    }
+    .gallery-dot {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      background: rgba(255,255,255,0.5);
+      border-radius: 50%;
+      margin: 0 3px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .gallery-dot.active {
+      background: #fff;
+    }
+    .fullscreen-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      z-index: 20;
+      background: rgba(255,255,255,0.15);
+      border: none;
+      color: #fff;
+      font-size: 22px;
+      border-radius: 6px;
+      padding: 7px 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .fullscreen-btn:hover {
+      background: rgba(255,255,255,0.3);
+    }
+    /* Fullscreen mode styles */
+    .gallery-container.fullscreen {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      margin: 0 !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      z-index: 9999;
+      background: #111;
+    }
+    @media (max-width: 700px) {
+      .gallery-container {
+        width: 98vw;
+        height: 56vw;
+        min-height: 220px;
+        max-height: 65vw;
+      }
+    }
+    @media (max-width: 430px) {
+      .gallery-container {
+        width: 100vw;
+        height: 56vw;
+        min-height: 160px;
+        max-height: 60vw;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="gallery-container" id="gallery">
+    <button class="fullscreen-btn" id="fullscreenBtn" title="Toggle Fullscreen">
+      <span id="fullscreenIcon">&#x26F6;</span> Fullscreen
+    </button>
+    <!-- Slides will be injected here -->
+    <div class="gallery-controls">
+      <button class="gallery-btn" id="prevBtn">&#8592;</button>
+      <button class="gallery-btn" id="nextBtn">&#8594;</button>
+      <div class="gallery-dots" id="galleryDots"></div>
+    </div>
+  </div>
+  <script>
+    // Replace these image URLs with your own or use Unsplash for demo
+    const images = [
+      'https://source.unsplash.com/random/600x400?sig=1',
+      'https://source.unsplash.com/random/600x400?sig=2',
+      'https://source.unsplash.com/random/600x400?sig=3',
+      'https://source.unsplash.com/random/600x400?sig=4',
+      'https://source.unsplash.com/random/600x400?sig=5',
+      'https://source.unsplash.com/random/600x400?sig=6',
+      'https://source.unsplash.com/random/600x400?sig=7',
+      'https://source.unsplash.com/random/600x400?sig=8',
+      'https://source.unsplash.com/random/600x400?sig=9',
+      'https://source.unsplash.com/random/600x400?sig=10'
+    ];
+
+    const gallery = document.getElementById('gallery');
+    const galleryDots = document.getElementById('galleryDots');
+    let current = 0;
+    let slides = [];
+
+    function createSlides() {
+      images.forEach((src, i) => {
+        const img = document.createElement('img');
+        img.src = src;
+        img.className = 'gallery-slide' + (i === 0 ? ' active' : '');
+        img.alt = `Image ${i+1}`;
+        gallery.appendChild(img);
+        slides.push(img);
+
+        // Dots
+        const dot = document.createElement('span');
+        dot.className = 'gallery-dot' + (i === 0 ? ' active' : '');
+        dot.addEventListener('click', () => showSlide(i));
+        galleryDots.appendChild(dot);
+      });
+    }
+
+    function updateDots() {
+      const dots = document.querySelectorAll('.gallery-dot');
+      dots.forEach((dot, i) => {
+        dot.classList.toggle('active', i === current);
+      });
+    }
+
+    function showSlide(idx) {
+      slides[current].classList.remove('active');
+      current = (idx + slides.length) % slides.length;
+      slides[current].classList.add('active');
+      updateDots();
+    }
+
+    document.getElementById('prevBtn').addEventListener('click', () => {
+      showSlide(current - 1);
+    });
+    document.getElementById('nextBtn').addEventListener('click', () => {
+      showSlide(current + 1);
+    });
+
+    createSlides();
+
+    // Optional: Auto-slide every 2 seconds
+    setInterval(() => {
+      showSlide(current + 1);
+    }, 2000);
+
+    // Fullscreen functionality
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+    const fullscreenIcon = document.getElementById('fullscreenIcon');
+
+    function isFullscreen() {
+      return document.fullscreenElement === gallery ||
+             document.webkitFullscreenElement === gallery ||
+             gallery.classList.contains('fullscreen');
+    }
+
+    function enterFullscreen() {
+      if (gallery.requestFullscreen) {
+        gallery.requestFullscreen();
+      } else if (gallery.webkitRequestFullscreen) {
+        gallery.webkitRequestFullscreen();
+      } else {
+        // fallback: CSS class
+        gallery.classList.add('fullscreen');
+      }
+      fullscreenIcon.innerHTML = '&#x2715;'; // X mark
+      fullscreenBtn.childNodes[1].textContent = ' Exit';
+    }
+
+    function exitFullscreen() {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      } else {
+        // fallback: CSS class
+        gallery.classList.remove('fullscreen');
+      }
+      fullscreenIcon.innerHTML = '&#x26F6;'; // Fullscreen icon
+      fullscreenBtn.childNodes[1].textContent = ' Fullscreen';
+    }
+
+    fullscreenBtn.addEventListener('click', () => {
+      if (!isFullscreen()) {
+        enterFullscreen();
+      } else {
+        exitFullscreen();
+      }
+    });
+
+    // Listen for browser fullscreen changes
+    document.addEventListener('fullscreenchange', () => {
+      if (!isFullscreen()) {
+        gallery.classList.remove('fullscreen');
+        fullscreenIcon.innerHTML = '&#x26F6;';
+        fullscreenBtn.childNodes[1].textContent = ' Fullscreen';
+      } else {
+        fullscreenIcon.innerHTML = '&#x2715;';
+        fullscreenBtn.childNodes[1].textContent = ' Exit';
+      }
+    });
+
+    // Fallback for webkit
+    document.addEventListener('webkitfullscreenchange', () => {
+      if (!isFullscreen()) {
+        gallery.classList.remove('fullscreen');
+        fullscreenIcon.innerHTML = '&#x26F6;';
+        fullscreenBtn.childNodes[1].textContent = ' Fullscreen';
+      } else {
+        fullscreenIcon.innerHTML = '&#x2715;';
+        fullscreenBtn.childNodes[1].textContent = ' Exit';
+      }
+    });
+
+    // Escape key exits fullscreen (fallback CSS mode)
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && gallery.classList.contains('fullscreen')) {
+        gallery.classList.remove('fullscreen');
+        fullscreenIcon.innerHTML = '&#x26F6;';
+        fullscreenBtn.childNodes[1].textContent = ' Fullscreen';
+      }
+    });
+  </script>
+</body>
+</html>
